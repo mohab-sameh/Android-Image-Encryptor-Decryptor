@@ -37,5 +37,11 @@
 
         </LinearLayout>
 
+    <Button
+        android:id="@+id/btn_upload"
+        android:layout_width="400dp"
+        android:layout_height="60dp"
+        android:text="Upload" />
+
 
 </RelativeLayout>

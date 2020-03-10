@@ -7,18 +7,20 @@ import android.Manifest;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.media.Image;
+import android.icu.util.TimeZone;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.mohab.utils.CStorage;
 import com.example.mohab.utils.MyEncrypter;
 import com.karumi.dexter.Dexter;
-import com.karumi.dexter.DexterBuilder;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
@@ -28,13 +30,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Time;
 import java.util.List;
 
 import javax.crypto.NoSuchPaddingException;
@@ -43,10 +45,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String FILE_NAME_ENC = "cpts_enc";
     private static final String FILE_NAME_DEC = "spts_dec.png";
-    Button btn_enc, btn_dec;
+    Button btn_enc, btn_dec,btn_upload;
     ImageView imageView;
     File myDir;
-
+    CStorage cstorage;
     String my_key="O17GAyS6whmFjpor";
     String my_spec_key = "G4Fg6gP7e0C9wpEq";
 
@@ -55,10 +57,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        cstorage = new CStorage();
         btn_dec = (Button)findViewById(R.id.btn_decrypt);
         btn_enc = (Button)findViewById(R.id.btn_encrypt);
+        btn_upload = findViewById(R.id.btn_upload);
         imageView = (ImageView)findViewById(R.id.imageView);
-        myDir = new File(Environment.getExternalStorageDirectory().toString()+"/saved_files");
+        myDir = new File(Environment.getExternalStorageDirectory().toString()+"");
         
         Dexter.withActivity(this)
                 .withPermissions(new String[] {
@@ -109,17 +113,22 @@ public class MainActivity extends AppCompatActivity {
         btn_enc.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Drawable drawable = ContextCompat.getDrawable(MainActivity.this, R.drawable.cpts);
+                Drawable drawable = ContextCompat.getDrawable(MainActivity.this
+                        , R.drawable.cpts);
                 BitmapDrawable bitmapDrawable = (BitmapDrawable)drawable;
                 Bitmap bitmap = bitmapDrawable.getBitmap();
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
                 InputStream is = new ByteArrayInputStream(stream.toByteArray());
 
-                File outputFileEnc = new File(myDir, FILE_NAME_ENC);
+                File outputFileEnc = new File(myDir,FILE_NAME_ENC);
+
                 try{
-                    MyEncrypter.encryptToFile(my_key, my_spec_key, is, new FileOutputStream(outputFileEnc));
-                    Toast.makeText(MainActivity.this, "Encrypted!", Toast.LENGTH_SHORT).show();
+                    cstorage.uploadFile(MainActivity.this
+                            , MyEncrypter.encryptReturnFile(my_key, my_spec_key
+                                    , is, new FileOutputStream(outputFileEnc)));
+                    Toast.makeText(MainActivity.this, "Encrypted!"
+                            , Toast.LENGTH_SHORT).show();
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -132,6 +141,13 @@ public class MainActivity extends AppCompatActivity {
                 } catch (NoSuchPaddingException e) {
                     e.printStackTrace();
                 }
+            }
+        });
+
+        btn_upload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
             }
         });
 

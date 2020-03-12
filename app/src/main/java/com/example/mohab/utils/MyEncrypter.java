@@ -46,6 +46,7 @@ public class MyEncrypter {
             out.close();
         }
     }
+
     public static byte[] encryptReturnFile(String keyStr, String specStr, InputStream in, OutputStream out) throws InvalidAlgorithmParameterException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IOException {
         try{
             IvParameterSpec iv = new IvParameterSpec(specStr.getBytes("UTF-8"));

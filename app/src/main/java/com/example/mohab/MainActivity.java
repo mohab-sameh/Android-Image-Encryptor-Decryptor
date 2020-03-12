@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String FILE_NAME_ENC = "cpts_enc";
     private static final String FILE_NAME_DEC = "spts_dec.png";
-    Button btn_enc, btn_dec,btn_upload;
+    Button btn_enc, btn_dec,btn_images;
     ImageView imageView;
     File myDir;
     CStorage cstorage;
@@ -58,16 +59,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         cstorage = new CStorage();
+
         btn_dec = (Button)findViewById(R.id.btn_decrypt);
         btn_enc = (Button)findViewById(R.id.btn_encrypt);
-        btn_upload = findViewById(R.id.btn_upload);
+        btn_images = findViewById(R.id.btn_images);
         imageView = (ImageView)findViewById(R.id.imageView);
         myDir = new File(Environment.getExternalStorageDirectory().toString()+"");
         
         Dexter.withActivity(this)
                 .withPermissions(new String[] {
                         Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 })
                 .withListener(new MultiplePermissionsListener() {
                     @Override
@@ -113,43 +115,44 @@ public class MainActivity extends AppCompatActivity {
         btn_enc.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Drawable drawable = ContextCompat.getDrawable(MainActivity.this
-                        , R.drawable.cpts);
-                BitmapDrawable bitmapDrawable = (BitmapDrawable)drawable;
-                Bitmap bitmap = bitmapDrawable.getBitmap();
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                InputStream is = new ByteArrayInputStream(stream.toByteArray());
+                if(cstorage.getStorageTask() == null) {
+                    Drawable drawable = ContextCompat.getDrawable(MainActivity.this
+                            , R.drawable.cpts);
+                    BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+                    Bitmap bitmap = bitmapDrawable.getBitmap();
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    InputStream is = new ByteArrayInputStream(stream.toByteArray());
 
-                File outputFileEnc = new File(myDir,FILE_NAME_ENC);
+                    File outputFileEnc = new File(myDir, FILE_NAME_ENC);
 
-                try{
-                    cstorage.uploadFile(MainActivity.this
-                            , MyEncrypter.encryptReturnFile(my_key, my_spec_key
-                                    , is, new FileOutputStream(outputFileEnc)));
-                    Toast.makeText(MainActivity.this, "Encrypted!"
-                            , Toast.LENGTH_SHORT).show();
+                    try {
+                        cstorage.uploadFile(MainActivity.this
+                                , MyEncrypter.encryptReturnFile(my_key, my_spec_key
+                                        , is, new FileOutputStream(outputFileEnc)));
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                } catch (InvalidKeyException e) {
-                    e.printStackTrace();
-                } catch (InvalidAlgorithmParameterException e) {
-                    e.printStackTrace();
-                } catch (NoSuchPaddingException e) {
-                    e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                    } catch (InvalidKeyException e) {
+                        e.printStackTrace();
+                    } catch (InvalidAlgorithmParameterException e) {
+                        e.printStackTrace();
+                    } catch (NoSuchPaddingException e) {
+                        e.printStackTrace();
+                    }
+                } else{
+                    Toast.makeText(MainActivity.this,"Pending",Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
-        btn_upload.setOnClickListener(new View.OnClickListener() {
+        btn_images.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                startActivity(new Intent(MainActivity.this,ImagesActivity.class));
             }
         });
-
     }
 }
